@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portail des Collectivités locales en chiffres</title>
+    <!-- Styles -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.3/html2pdf.bundle.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+
+        .header {
+            background-color: #2c3e50;
+            color: #fff;
+            padding: 20px;
+            text-align: center;
+            position: relative;
+        }
+
+        .header h1 {
+            margin: 0;
+            animation: marquee 15s linear infinite;
+        }
+
+        @keyframes marquee {
+            0% { transform: translateX(100%); }
+            100% { transform: translateX(-100%); }
+        }
+
+        .content {
+            display: flex;
+            margin-top: 10px;
+        }
+
+        .sidebar {
+            width: 250px;
+            background-color: #34495e;
+            padding: 10px;
+        }
+
+        .sidebar button {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 5px;
+            border: none;
+            background-color: #2c3e50;
+            color: white;
+            cursor: pointer;
+        }
+        .sidebar button:hover, .sidebar button.active {
+            background-color: #1abc9c;
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 20px;
+        }
+
+        iframe {
+            width: 100%;
+            height: 600px;
+            border: none;
+        }
+
+        .fullscreen {
+            height: 800px;
+        }
+
+        .stats-panel {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+
+        .stats-panel div {
+            background-color: #4c7065;
+            padding: 10px;
+            width: 23%;
+            text-align: center; 
+            color: rgb(245, 201, 5);
+            border-radius: 10px;
+            font-size: 16px; 
+            font-weight: bold;
+        }
+
+        footer {
+            background-color: #004D40;
+            color: white;
+            text-align: center;
+            padding: 0.6%;
+            position: relative;
+            width: 100%;
+            bottom: 0;
+            font-size: 0.9rem;
+        }
+
+        .arrow-button {
+            cursor: pointer;
+            font-size: 24px;
+            border: none;
+            background: none;
+            color: #2c3e50;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Portail des Collectivités locales en chiffres</h1>
+    </div>
+
+    <div class="content">
+        <div class="sidebar">
+            <button data-sector="donnesge" onclick="loadSectorData('donnesge')"><img src="peop.png" style="float:left; height:30px ; width:30px;">DONNEES GENERALES</button>
+            <button data-sector="health" onclick="loadSectorData('health')"><img src="sante.png"style="float:left; height:25px ; width:30px;">SANTE</button>
+            <button data-sector="education" onclick="loadSectorData('education')"><img src="sc.jpg"style="float:left; height:30px ; width:30px;">ÉDUCATION NATIONALE</button>
+            <button data-sector="roads" onclick="loadSectorData('roads')"><img src="roa.png"style="float:left; height:25px ; width:30px;">RESEAUX ROUTIERS</button>
+            <button data-sector="housing" onclick="loadSectorData('housing')"><img src="4.png"style="float:left; height:25px ; width:30px;">HABITAT</button>
+            <button data-sector="agriculture" onclick="loadSectorData('agriculture')"><img src="1.png"style="float:left; height:25px ; width:30px;">ENERGIES ET MINES</button>
+            <button data-sector="environment" onclick="loadSectorData('environment')"><img src="RRR.png"style="float:left; height:25px ; width:30px;">RESSOURCES EN EAU</button>
+            <button onclick="downloadPDF()"><img src="pdf.png"style="float:left; height:25px ; width:30px;">Télécharger PDF</button>
+            <button onclick="downloadExcel()"><img src="excel.jpg"style="float:left; height:25px ; width:30px;">Télécharger Excel</button>
+            <button onclick="openWilayaPage()"><img src="ZACS/Algeria.jpg"style="float:left; height:25px ; width:30px;">Wilaya en Chiffres</button>
+            <button onclick="openCarteWilayaPage()"><img src="CARTES DES W.png"style="float:left; height:25px ; width:30px;">CARTES WILAYA</button>
+            
+        </div>
+
+        <div class="main-content">
+            <iframe id="mapFrame" src="default_map.html"></iframe>
+            
+            <div class="stats-panel">
+                <div id="stat1">Indicateur 1</div>
+                <div id="stat2">Indicateur 2</div>
+                <div id="stat3">Indicateur 3</div>
+                <div id="stat4">Indicateur 4</div>
+            </div>
+            <iframe id="excelFrame" src="default_excel.html" style="margin-top: 20px;"></iframe>
+            <div style="display: flex; align-items: center; margin-top: 20px;">
+               
+            </div>
+
+            
+        </div>
+    </div>
+    
+    <footer>
+        &copy; SD/ACE-DEPASE-DGCL-MICLAT 2024 © Tous droits réservés
+    </footer>
+
+    <script>
+        const sectorData = {
+            donnesge: {
+                mapUrl: 'carte_pop/Wilayas/TAMANRASSET.html',
+                excelUrl: 'Excel_Wilaya/W11/Po_W111.htm',
+                stats: ['Population Totale: 163 234 (Hbts)', 'Population urbaine : 110 466 (Hbts)', 'Population rurale : 52 768 (Hbts)', 'Densite : 0,50 (Hbts/Km2)'],
+                graphUrls: ['Population_par_wilaya.html', 'Graphpopo en cercle.html', 'Population_par_wilaya2024.html']
+            },
+            health: {
+                mapUrl: 'Santé/qgis2web_2024_05_01-21_33_45_234892/W11_santé.html',
+                excelUrl:'Excel_Wilaya/W01.htm',
+                stats: ['Centre Hospitalo_Universitaires(CHU)=15', 'Etablissements_Publics_Santé_Proximité(EPSP)= 273', 'Polycliniques : 1 828', 'Salles de soins= 6 657'],
+                graphUrls: ['les graphiques/Principaux Indicateurs_Santé fin 2023.html', 'les graphiques/Principaux Indicateurs_Ssanté fin 2023.html']
+            },
+            education: {
+                mapUrl: 'Education/qgis2web_2024_04_08-12_46_19_517228/wilaya/W11-education/W11_education.html',
+                excelUrl: 'Education/education.htm',
+                stats: ['Nbre_Ecoles primaire= 20 383', 'Nbre de C.EM= 5 961', 'Nbre de Lycées = 2 681', 'Nbre de Cantines Scholaires= 17 029'],
+                graphUrls: ['les graphiques/TOC_par_wilaya.html', 'TE_par_wilaya.html', 'edu_g-cercle.html']
+            },
+
+            roads: {
+                mapUrl: 'reseau routier/Wilayas/W11_RR/W11_RR.html',
+                excelUrl: 'RR.htm',
+                stats: ['longueur total du RR : 141 000 Km', 'longueur total des RN : 34 322,96 Km', 'longueur total des CW : 25 870,31 Km', 'longueur total des CC : 79 370,23 Km'],
+                graphUrls: ['les graphiques/Réseau Routier.html', 'Taux_Electrification et de raccordement en Gaz fin 2023.html']
+            },
+            housing: {
+                mapUrl: 'qgis2web_2024_03_25-13_36_10_369268/Wilayas/W11/W11_logt.html',
+                excelUrl: 'log.htm',
+                chartUrl:'les graphiques/logements_par_wilaya.html',
+                stats: ['LOGEMENTS URBAINS (Hbts)= 8 075 923 (Logts)', 'LOGEMENTS RURAUX (Hbts) = 2 482 603', 'PARC LOGEMENTS TOTAL (Hbts)= 10 558 526', 'T.O.L = 4,25'],
+                graphUrls: ['les graphiques/logements_par_wilaya.html', 'logement pie.html']
+            },
+            agriculture: {
+                mapUrl: 'Gaz et electrification/qgis2web_2024_03_28-11_09_45_027319/W11_éléc/index.html',
+                excelUrl: 'Excel_Wilaya/W11-energies et mines.htm',
+                stats: ['Nombre de foyers raccordés_ectricité = 10 391 359 (Foyers)', 'Taux_électrification = 99,04%', 'Nombre de foyers raccordés au gaz = 8 124 013 (Foyers)', 'Taux de raccordement au gaz = 65%'],
+                graphUrls: ['Taux_Electrification et de raccordement en Gaz fin 2023.html', 'Taux_Electrification et de raccordement en Gaz fin 2023.html']
+            },
+            environment: {
+                mapUrl: 'ressources en eau/qgis2web_2024_03_30-05_31_33_913459/W11_RE.html',
+                excelUrl: 'AEP.htm',
+                stats: ['Barrages en exploitations = 80', 'Forages en exploitations = 26 448','Taux de raccordement en AEP =98%','Taux de raccordement en Assainissement= 92%'],
+                graphUrls: ['Taux (%) de raccordement en AEP et En Assiniassement.html', 'Taux_Electrification et de raccordement en Gaz fin 2023.html']
+            }
+        };
+
+        let currentGraphIndex = 0;
+        
+        function loadSectorData(sector) {
+            const data = sectorData[sector];
+            document.getElementById('mapFrame').src = data.mapUrl;
+            document.getElementById('excelFrame').src = data.excelUrl;
+            document.getElementById('stat1').innerText = data.stats[0];
+            document.getElementById('stat2').innerText = data.stats[1];
+            document.getElementById('stat3').innerText = data.stats[2];
+            document.getElementById('stat4').innerText = data.stats[3];
+            document.getElementById('graphFrame').src = data.graphUrls[0];  // Affiche le premier graphique du secteur
+            currentGraphIndex = 0;
+        }
+
+        function changeGraph(direction) {
+            const sector = document.querySelector('.sidebar button.active')?.getAttribute('data-sector');
+            if (sector) {
+                const data = sectorData[sector];
+                currentGraphIndex = (currentGraphIndex + direction + data.graphUrls.length) % data.graphUrls.length;
+                document.getElementById('graphFrame').src = data.graphUrls[currentGraphIndex];
+            }
+        }
+        function loadWilayaData() {
+            document.getElementById('mapFrame').src = 'wilaya_map.html';
+            document.getElementById('excelFrame').src = 'wilaya_data.xlsx';
+            document.getElementById('stat1').innerText = 'Indicateur Wilaya 1';
+            document.getElementById('stat2').innerText = 'Indicateur Wilaya 2';
+            document.getElementById('stat3').innerText = 'Indicateur Wilaya 3';
+            document.getElementById('stat4').innerText = 'Indicateur Wilaya 4';
+            document.getElementById('stat5').innerText = 'Indicateur Wilaya 5';
+        }
+        function downloadPDF() {
+            const element = document.querySelector('.main-content');
+            html2pdf().from(element).save('report.pdf');
+        }
+
+        function downloadExcel() {
+            const excelUrl = document.getElementById('excelFrame').src;
+            window.open(excelUrl);
+        }
+
+        function openWilayaPage() {
+            // Ouvrir une nouvelle page pour la Wilaya avec les mêmes options que la fenêtre principale
+            window.open('Carte national.html', '_blank');
+        }
+        function openCarteWilayaPage() {
+            // Ouvrir une nouvelle page pour la Wilaya avec les mêmes options que la fenêtre principale
+            window.open('Carte/carte.html', '_blank');
+        }
+
+        // Initialisation
+        document.querySelectorAll('.sidebar button').forEach(button => {
+            button.addEventListener('click', function () {
+                document.querySelectorAll('.sidebar button').forEach(btn => btn.classList.remove('active'));
+                this.classList.add('active');
+                loadSectorData(this.getAttribute('data-sector'));
+            });
+        });
+
+        // Gestion des graphiques au chargement de la page
+        window.onload = function() {
+            // Initialisation avec les données du premier secteur par défaut
+            const firstSector = document.querySelector('.sidebar button[data-sector]')?.getAttribute('data-sector');
+            if (firstSector) {
+                loadSectorData(firstSector);
+            }
+        };
+    </script>
+</body>
+</html>
